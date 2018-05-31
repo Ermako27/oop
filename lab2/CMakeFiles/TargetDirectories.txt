@@ -1,0 +1,3 @@
+/media/ermak/94B2DAA4B2DA8A5E/oop/lab2/CMakeFiles/rebuild_cache.dir
+/media/ermak/94B2DAA4B2DA8A5E/oop/lab2/CMakeFiles/edit_cache.dir
+/media/ermak/94B2DAA4B2DA8A5E/oop/lab2/CMakeFiles/lab2.dir

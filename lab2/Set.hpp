@@ -1,11 +1,3 @@
-//
-//  Set.hpp
-//  lab2
-//
-//  Created by Daniel Shiposha on 02/04/2018.
-//  Copyright © 2018 Daniel Shiposha. All rights reserved.
-//
-
 #ifndef Set_hpp
 #define Set_hpp
 
@@ -37,15 +29,16 @@ public:
     bool found(const Type &) const;
     
     template <typename... Arguments>
-    bool add(Arguments&&...);
+    bool emplace(Arguments&&...);
     
     bool insert(const Type &);
     
     void insert(const std::initializer_list<Type> &);
     
     bool erase(const Type &);
-    
-    
+
+    Set &cross(const Set &, const Set &);
+        
     size_t size() const;
     
     const Type &operator[](size_t index) const;
@@ -67,7 +60,7 @@ private:
     
     static bool equal(const Type &, const Type &);
     
-    static constexpr size_t dcap = 6;
+    static constexpr size_t DEFAULT_CAPACITY = 4;
     
     std::unique_ptr<std::shared_ptr<Type>[]> data;
     size_t cur_size;
@@ -75,21 +68,29 @@ private:
 };
 
 template <typename T>
-Set<T>::Set() : data(new std::shared_ptr<T>[dcap]), cur_size(0), capacity(dcap)
+Set<T>::Set()
+: data(new std::shared_ptr<T>[DEFAULT_CAPACITY]),
+cur_size(0),
+capacity(DEFAULT_CAPACITY)
 {}
 
 template <typename T>
-Set<T>::Set(const Set &other) : data(new std::shared_ptr<T>[other.capacity]), cur_size(other.cur_size), capacity(other.capacity)
+Set<T>::Set(const Set &other)
+: data(new std::shared_ptr<T>[other.capacity]),
+cur_size(other.cur_size),
+capacity(other.capacity)
 {
     std::copy(other.data.get(), other.data.get() + other.cur_size, data.get());
 }
 
 template <typename T>
-Set<T>::Set(Set &&other) : data(std::move(other.data)), cur_size(other.capacity), capacity(other.capacity)
+Set<T>::Set(Set &&other)
+: data(std::move(other.data)), cur_size(other.capacity), capacity(other.capacity)
 {}
 
 template <typename T>
-Set<T>::Set(const std::initializer_list<T> &list) : Set()
+Set<T>::Set(const std::initializer_list<T> &list)
+: Set()
 {
     insert(list);
 }
@@ -101,7 +102,7 @@ Set<T> &Set<T>::operator=(const Set &rhs)
         return *this;
     
     Set copy(rhs);
-    data  = std::move(copy.data);
+    data = std::move(copy.data);
     cur_size = copy.cur_size;
     capacity = copy.capacity;
     
@@ -113,7 +114,7 @@ Set<T> &Set<T>::operator=(Set &&rhs)
 {
     data = std::move(rhs.data);
     cur_size = rhs.cur_size;
-    capacity       = rhs.capacity;
+    capacity = rhs.capacity;
     return *this;
 }
 
@@ -135,6 +136,7 @@ bool Set<T>::is_empty() const
 template <typename T>
 bool Set<T>::found(const T &value) const
 {
+    std::shared_ptr<T> stored;
     bool is_found = false;
     for(size_t i = 0; i < cur_size && !is_found; ++i)
         if(equal(value, (*this)[i]))
@@ -145,7 +147,7 @@ bool Set<T>::found(const T &value) const
 
 template <typename T>
 template <typename... Arguments>
-bool Set<T>::add(Arguments&&... arguments)
+bool Set<T>::emplace(Arguments&&... arguments)
 {
     if (capacity == cur_size)
         realloc();
@@ -162,7 +164,7 @@ bool Set<T>::add(Arguments&&... arguments)
 template <typename T>
 bool Set<T>::insert(const T &value)
 {
-    return add(value);
+    return emplace(value);
 }
 
 template <typename T>
@@ -183,6 +185,7 @@ bool Set<T>::erase(const T &value)
             --cur_size;
             is_found = true;
         }
+    
     return is_found;
 }
 
@@ -193,41 +196,9 @@ size_t Set<T>::size() const
 }
 
 template <typename T>
-void Set<T>::realloc()
-{
-    size_t new_capacity = capacity * 2;
-    std::unique_ptr<std::shared_ptr<T>[]> new_data(new std::shared_ptr<T>[new_capacity]);
-    
-    std::copy(data.get(), data.get() + cur_size, new_data.get());
-    data = std::move(new_data);
-    capacity = new_capacity;
-    delete new_data.get();
-}
-
-template <typename T>
-bool Set<T>::equal(const T &lhs, const T &rhs)
-{
-    return rhs = lhs;
-}
-
-template <typename T>
-
-template <typename T>
-std::ostream &operator<<(std::ostream &stream, const Set<T> &set)
-{
-    
-    stream << '<';
-    if(!set.is_empty())
-        stream << set[0];
-    for(size_t i = 1; i < set.size(); ++i)
-        stream << ", " << set[i];
-    return stream << '>';
-}
-
-template <typename T>
 const T &Set<T>::operator[](size_t index) const
-{
-   return *data.get()[index];
+{   
+    return *data.get()[index];
 }
 
 template <typename T>
@@ -281,4 +252,73 @@ bool Set<T>::operator>=(const Set &rhs) const
     return !(*this < rhs);
 }
 
+template <typename T>
+void Set<T>::realloc()
+{
+    size_t new_capacity = capacity * 2;
+    std::unique_ptr<std::shared_ptr<T>[]> new_data(new std::shared_ptr<T>[new_capacity]);
+    
+    std::copy(data.get(), data.get() + cur_size, new_data.get());
+    data = std::move(new_data);
+    capacity = new_capacity;
+    delete new_data.get();
+}
+
+
+template <typename T>
+bool Set<T>::equal(const T &lhs, const T &rhs)
+{
+    return rhs == lhs;
+}
+
+template <typename T>
+std::ostream &operator<<(std::ostream &stream, const Set<T> &set)
+{
+    
+    stream << '<';
+    if(!set.is_empty())
+        stream << set[0];
+    for(size_t i = 1; i < set.size(); ++i)
+        stream << ", " << set[i];
+    return stream << '>' << "\n";
+}
+
+template <typename T>
+Set<T> &Set<T>::cross(const Set &rhs, const Set &lhs)
+{
+    Set<T> result;
+    size_t big_tmp;
+    size_t small_tmp;
+
+    if (rhs.cur_size >= lhs.cur_size)
+    {
+        big_tmp = rhs.cur_size;
+        small_tmp = lhs.cur_size;
+        for (int i = 0; i < small_tmp; i++)
+        {
+            for (int j= 0; j < big_tmp; j++)
+            {
+                if (equal(rhs[j], lhs[i]))
+                    result.insert(lhs[i]);
+            }
+        }
+    }
+    else
+    {
+    
+        big_tmp = lhs.cur_size;
+        small_tmp = rhs.cur_size;
+        for (int i = 0; i < small_tmp; i++)
+        {
+            for (int j= 0; j < big_tmp; j++)
+            {
+                if (equal(rhs[i], lhs[j]))
+                    result.insert(rhs[i]);
+            }
+        }
+    }
+    return result;
+}
+
 #endif /* Set_hpp */
+
