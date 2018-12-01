@@ -337,7 +337,7 @@ void move(double dx, double dy, double dz, point_t *&obj, int amount_of_dots){
 }
 
 int main(){
-	char file_path[] = "cube1.txt";
+	char file_path[] = "new.txt";
 	point_t *v_obj;
 	polygon_t *f_obj;
 	int amount_of_dots;
@@ -368,10 +368,12 @@ int main(){
 	// проверочка rotate
 	double rotate_x = 0, rotate_y = 30, rotate_z = 0;
 	rotate(rotate_x, rotate_y, rotate_z, v_obj, amount_of_dots);
-	std::cout << v_obj[0].x << " " << v_obj[0].y << " " << v_obj[0].z << "\n";
-	std::cout << v_obj[1].x << " " << v_obj[1].y << " " << v_obj[1].z << "\n";
+	// std::cout << v_obj[0].x << " " << v_obj[0].y << " " << v_obj[0].z << "\n";
+	// std::cout << v_obj[1].x << " " << v_obj[1].y << " " << v_obj[1].z << "\n";
 
-		
+	for (int i = 0;i < amount_of_dots; i++)
+		std::cout << v_obj[i].x << " " << v_obj[i].y << " " << v_obj[i].z << "\n";
+
 
 
 
